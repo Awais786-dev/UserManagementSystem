@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UserManagementSystem.Models;
+using Updated_UserManagementSystem.Models;
+using Updated_UserManagementSystem.Repositories;
 
-
-namespace UserManagementSystem.Controllers
+namespace Updated_UserManagementSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : Controller
     {
-        private static UserRepos _userRepos = new UserRepos(); 
+        private static UserRepository _userRepos = new UserRepository();
 
         [HttpGet]
         [Route("get")]

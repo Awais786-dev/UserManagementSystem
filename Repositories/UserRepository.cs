@@ -1,15 +1,17 @@
-﻿namespace UserManagementSystem.Models
+﻿using Updated_UserManagementSystem.Models;
+
+namespace Updated_UserManagementSystem.Repositories
 {
-    public class UserRepos
+    public class UserRepository
     {
         private List<User> users;
-        public UserRepos()
+        public UserRepository()
         {
             users = new List<User>()  {
-                new User() { Id=1, Name="M Awais", Age=21 },
-                new User() { Id=2, Name="Ali Khan", Age=27 },
-                new User() { Id=3, Name="Tahir Mustasfvi", Age=20 },
-                new User() { Id=4, Name="Abdullah", Age=23 }
+                new User() { Id=1, Name="M Awais", Age=21, Address="Lahore" },
+                new User() { Id=2, Name="Ali Khan", Age=27, Address="Multan" },
+                new User() { Id=3, Name="Tahir Mustasfvi", Age=20 , Address = "Pindi"},
+                new User() { Id=4, Name="Abdullah", Age=23, Address="Isb" }
 
             };
         }
@@ -91,6 +93,7 @@
                 // Update user details
                 existingUser.Name = updatedUser.Name;
                 existingUser.Age = updatedUser.Age;
+                existingUser.Address = updatedUser.Address;
             }
             else
             {
