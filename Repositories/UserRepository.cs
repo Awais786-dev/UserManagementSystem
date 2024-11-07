@@ -1,32 +1,33 @@
-﻿using Updated_UserManagementSystem.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using User_Management_System.Entities;
+using User_Management_System.Models;
 
-namespace Updated_UserManagementSystem.Repositories
+namespace User_Management_System.Repositories
 {
     public class UserRepository
     {
+        // List<User> users;
+        private readonly EFCoreDbContext _dbcontext;
         private List<User> users;
-        public UserRepository()
+                           
+        public UserRepository(EFCoreDbContext dbcontext)
         {
-            users = new List<User>()  {
-                new User() { Id=1, Name="M Awais", Age=21, Address="Lahore" },
-                new User() { Id=2, Name="Ali Khan", Age=27, Address="Multan" },
-                new User() { Id=3, Name="Tahir Mustasfvi", Age=20 , Address = "Pindi"},
-                new User() { Id=4, Name="Abdullah", Age=23, Address="Isb" }
-
-            };
+            _dbcontext = dbcontext;
         }
 
-        public List<User> GetAllUsers()
+
+        public async Task<List<User>> GetAllUsers()
         {
-            return users;
+            return await _dbcontext.Users.ToListAsync(); // Fetch all users from the Users table
         }
 
-        public User GetUserById(int id)
+        public async Task<User> GetUserById(int id)
         {
-            return users.Find(s => s.Id == id);
+            return await _dbcontext.Users.FindAsync(id); // Finds a user by ID
         }
 
-        public void AddNewUser(User user)
+        // Add a new user to the database
+        public async Task AddNewUser(User user)
         {
             // Check if the user object is null
             if (user == null)
@@ -34,33 +35,34 @@ namespace Updated_UserManagementSystem.Repositories
                 throw new Exception("User cannot be null.");
             }
 
-            // Check if the ID is less than or equal to zero
-            if (user.Id <= 0)
-            {
-                throw new Exception("User ID must be a positive number.");
-            }
-
-            // Check if the Name is null or empty
+            // Validate the Name field
             if (string.IsNullOrWhiteSpace(user.Name))
             {
                 throw new Exception("User Name cannot be empty.");
             }
 
-            // Check if the Age is less than or equal to zero
+            // Validate the Age field
             if (user.Age <= 0)
             {
                 throw new Exception("User Age must be a positive number.");
             }
 
-            // Check if a user with the same ID already exists
-            if (GetUserById(user.Id) != null)
+            // Validate the Address field
+            if (string.IsNullOrWhiteSpace(user.Address))
             {
-                throw new Exception("User with this ID already exists.");
+                throw new Exception("User Address cannot be empty.");
             }
 
-            users.Add(user);
-        }
+            //  Check if a user with the same name already exists (if that's required)
+            if (await _dbcontext.Users.AnyAsync(u => u.Name == user.Name))
+            {
+                throw new Exception("A user with the same name already exists.");
+            }
 
+            // Add user to the database (auto-generated Id will be handled by the database)
+            await _dbcontext.Users.AddAsync(user);
+            await _dbcontext.SaveChangesAsync(); // Save changes to the database
+        }
 
         public void UpdateUser(int id, User updatedUser)
         {
@@ -68,32 +70,31 @@ namespace Updated_UserManagementSystem.Repositories
             {
                 throw new Exception("User ID must be provided and must be a positive integer.");
             }
-            // Check if the user exists
-            User existingUser = GetUserById(id);
+
+            // Get the existing user from the database
+            User existingUser = _dbcontext.Users.FirstOrDefault(u => u.Id == id);
 
             if (existingUser != null)
             {
-                // Check if the ID in the request matches the ID in the updated user
+                // Check if the ID in the request body matches the ID in the URL
                 if (updatedUser.Id != 0 && existingUser.Id != updatedUser.Id)
                 {
                     throw new Exception("User ID in the request body does not match the ID in the URL.");
                 }
 
-                // Check if name is empty
-                if (string.IsNullOrWhiteSpace(updatedUser.Name))
-                {
-                    throw new Exception("Name cannot be empty.");
-                }
+                // Update only the provided fields (leave the rest unchanged)
 
-                // Check if age is valid
-                if (updatedUser.Age < 18)
-                {
-                    throw new Exception("Age must be 18 or older.");
-                }
-                // Update user details
-                existingUser.Name = updatedUser.Name;
-                existingUser.Age = updatedUser.Age;
-                existingUser.Address = updatedUser.Address;
+                if (!string.IsNullOrWhiteSpace(updatedUser.Name))
+                    existingUser.Name = updatedUser.Name;
+
+                if (updatedUser.Age > 0)
+                    existingUser.Age = updatedUser.Age;
+
+                if (!string.IsNullOrWhiteSpace(updatedUser.Address))
+                    existingUser.Address = updatedUser.Address;
+
+                // Save changes to the database
+                _dbcontext.SaveChanges();
             }
             else
             {
@@ -101,18 +102,24 @@ namespace Updated_UserManagementSystem.Repositories
             }
         }
 
-
         public void DeleteUser(int id)
         {
-            User userToRemove = GetUserById(id);
-            if (userToRemove != null)
+            if (id <= 0)
             {
-                users.Remove(userToRemove);
+                throw new Exception("User ID must be a valid and positive integer.");
             }
-            else
+
+            // Find the user by Id
+            var user = _dbcontext.Users.FirstOrDefault(u => u.Id == id);
+
+            if (user == null)
             {
                 throw new Exception("User not found.");
             }
+
+            // Remove the user from the database
+            _dbcontext.Users.Remove(user);
+            _dbcontext.SaveChanges();
         }
     }
 }

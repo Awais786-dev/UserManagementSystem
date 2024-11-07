@@ -1,0 +1,6 @@
+@User_Management_System_HostAddress = http://localhost:5163
+
+
+GET {{User_Management_System_HostAddress}}/api/user/get
+
+###

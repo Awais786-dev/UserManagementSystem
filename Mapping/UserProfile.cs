@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Updated_UserManagementSystem.DTOs;
-using Updated_UserManagementSystem.Models;
+using User_Management_System.Models;
+using User_Management_System.DTOs;
 
-namespace Updated_UserManagementSystem.Mapping
+namespace User_Management_System.MappingProfile
 {
+
     public class UserProfile : Profile
     {
         public UserProfile()
